@@ -5,33 +5,29 @@ import { Product } from "../models/product";
 
 export const runThread = async () => {
   const streamableStatus = createStreamableValue("thread.init");
-  streamableStatus.update("Loading...");
-  // const result = await response.json();
-  // const products = result?.data as Product[];
-  // streamableStatus.done(products);
 
-  try {
-    const response = await fetch(
-      "https://beauty.alvocatfresh.co.ke/api/products12"
-    );
+  setTimeout(async () => {
+    try {
+      streamableStatus.update("Loading...");
+      await delay(5000);
+      streamableStatus.update("Delay done");
+      const response = await fetch(
+        "https://beauty.alvocatfresh.co.ke/api/products"
+      );
 
-    // Check if the request was successful
-    if (!response.ok) {
-      streamableStatus.done("Response not okay");
+      if (!response.ok) {
+        streamableStatus.done("Response not okay");
+      }
+      const result = await response.json();
+      const products = result?.data as Product[];
+      streamableStatus.done(products);
+    } catch (error) {
+      streamableStatus.done("Error");
     }
-
-    const result = await response.json();
-    const products = result?.data as Product[];
-
-    // Update status to indicate success and provide the fetched data
-    streamableStatus.done(products);
-  } catch (error) {
-    // Update status to indicate failure
-    // streamableStatus.error(error.message);
-    streamableStatus.done("Error");
-  }
+  }, 1000);
 
   return {
     status: streamableStatus.value,
   };
 };
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
