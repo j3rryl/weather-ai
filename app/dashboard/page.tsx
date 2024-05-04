@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getWeather } from "@/app/server-actions/weather";
+import { runThread } from "../server-actions/run-thread";
+import { readStreamableValue } from "ai/rsc";
 
 export default function Page() {
   const [weather, setWeather] = useState<any>(null);
@@ -26,6 +28,11 @@ export default function Page() {
       setLoading(true);
       const weatherUI = await getWeather();
       setWeather(weatherUI);
+      const { status } = await runThread();
+
+      for await (const value of readStreamableValue(status)) {
+        console.log(value);
+      }
       form.reset({ prompt: "" });
     } catch (error) {
     } finally {
