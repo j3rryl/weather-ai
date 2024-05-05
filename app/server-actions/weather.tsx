@@ -15,22 +15,21 @@ export const WeatherAI: any = createAI({
 
 export async function getProfile(query: string) {
   const profileUI = createStreamableUI();
-  profileUI.update(<LoadingSkeleton />);
 
-  setTimeout(() => {
-    profileUI.done(
-      <div className="flex justify-start gap-5 items-start my-3">
-        <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col gap-2">
-          <p>User</p>
-          <p>{query}</p>
-        </div>
+  profileUI.done(
+    <div className="flex justify-start gap-5 items-start my-3">
+      <Avatar>
+        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+        <AvatarFallback>U</AvatarFallback>
+      </Avatar>
+      <div className="flex flex-col gap-2">
+        <p>User</p>
+        <p>{query}</p>
       </div>
-    );
-  }, 500);
+    </div>
+  );
+
+  return profileUI.value;
 }
 
 export async function getWeather(query: string) {

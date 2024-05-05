@@ -31,8 +31,8 @@ export default function Page() {
       setWeather((currentUpdates: any) => [...currentUpdates, profileUI]);
 
       // Weather UI Updates
-      // const weatherUI = await getWeather(data.prompt);
-      // setWeather((currentUpdates: any) => [...currentUpdates, weatherUI]);
+      const weatherUI = await getWeather(data.prompt);
+      setWeather((currentUpdates: any) => [...currentUpdates, weatherUI]);
       form.reset({ prompt: "" });
     } catch (error) {
     } finally {
