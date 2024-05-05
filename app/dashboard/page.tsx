@@ -2,13 +2,15 @@
 import InputPrompt from "@/components/forms/input-prompt";
 import * as z from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { RefObject, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getProfile, getWeather } from "@/app/server-actions/weather";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Page() {
+  // const scrollRef = useRef(null);
+  const scrollRef: RefObject<HTMLDivElement> = useRef<HTMLDivElement>(null);
+
   const [weather, setWeather] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const formSchema = z.object({
@@ -33,6 +35,9 @@ export default function Page() {
       // Weather UI Updates
       const weatherUI = await getWeather(data.prompt);
       setWeather((currentUpdates: any) => [...currentUpdates, weatherUI]);
+      if (scrollRef.current) {
+        scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
       form.reset({ prompt: "" });
     } catch (error) {
     } finally {
@@ -42,7 +47,9 @@ export default function Page() {
   return (
     <>
       <div className="flex flex-col h-full p-2 md:p-2 pt-6 gap-2">
-        <ScrollArea className="flex-grow h-5/6">{weather}</ScrollArea>
+        <ScrollArea ref={scrollRef} className="flex-grow h-5/6">
+          {weather}
+        </ScrollArea>
         <div>
           <InputPrompt onSubmit={onSubmit} loading={loading} form={form} />
         </div>

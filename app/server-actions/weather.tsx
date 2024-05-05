@@ -26,6 +26,7 @@ export async function getProfile(query: string) {
         <p>User</p>
         <p>{query}</p>
       </div>
+      <div className="h-20"></div>
     </div>
   );
 
@@ -57,6 +58,7 @@ export async function getWeather(query: string) {
               <p>Weather API</p>
               <p>{message}</p>
             </div>
+            <div className="h-20"></div>
           </div>
         );
       }
@@ -71,7 +73,7 @@ export async function getWeather(query: string) {
               <p>Weather API</p>
             </div>
           </div>
-          <Card className="m-5 py-3 w-1/2">
+          <Card className="m-5 py-3 w-1/3">
             <CardContent>
               <Suspense>
                 <Image
@@ -90,6 +92,7 @@ export async function getWeather(query: string) {
               <p>Humidity: {weather.current.humidity}g/cm³</p>
             </CardContent>
           </Card>
+          <div className="h-8"></div>
         </div>
       );
     } catch (error) {}

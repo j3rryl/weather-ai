@@ -45,7 +45,8 @@ const InputPrompt: React.FC<InputPromptProps> = ({
                   <FormControl>
                     <Textarea
                       rows={1}
-                      placeholder="Enter location to get weather update..."
+                      required
+                      placeholder="Enter location to get weather update (e.g., Nairobi)"
                       disabled={loading}
                       {...field}
                     />
