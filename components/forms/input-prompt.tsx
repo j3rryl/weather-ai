@@ -45,7 +45,7 @@ const InputPrompt: React.FC<InputPromptProps> = ({
                   <FormControl>
                     <Textarea
                       rows={1}
-                      placeholder="Howdy' mate?"
+                      placeholder="Enter location to get weather update..."
                       disabled={loading}
                       {...field}
                     />

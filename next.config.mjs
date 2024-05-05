@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+import withPlaiceholder from "@plaiceholder/next";
+
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -6,10 +8,13 @@ const nextConfig = {
         hostname: "images.unsplash.com",
       },
       {
-        hostname: "360beautyscents.co.ke",
+        hostname: "github.com",
+      },
+      {
+        hostname: "cdn.weatherapi.com",
       },
     ],
   },
 };
 
-export default nextConfig;
+export default withPlaiceholder(nextConfig);

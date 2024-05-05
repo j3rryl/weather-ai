@@ -5,10 +5,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getWeather } from "@/app/server-actions/weather";
+import { getProfile, getWeather } from "@/app/server-actions/weather";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Page() {
-  const [weather, setWeather] = useState<any>(null);
+  const [weather, setWeather] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const formSchema = z.object({
     prompt: z.string(),
@@ -24,8 +25,14 @@ export default function Page() {
   const onSubmit = async (data: InputFormValue) => {
     try {
       setLoading(true);
-      const weatherUI = await getWeather();
-      setWeather(weatherUI);
+
+      // Profile UI
+      const profileUI = await getProfile(data.prompt);
+      setWeather((currentUpdates: any) => [...currentUpdates, profileUI]);
+
+      // Weather UI Updates
+      // const weatherUI = await getWeather(data.prompt);
+      // setWeather((currentUpdates: any) => [...currentUpdates, weatherUI]);
       form.reset({ prompt: "" });
     } catch (error) {
     } finally {
