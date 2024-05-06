@@ -38,7 +38,7 @@ function WeatherCard({ weatherInfo }: { weatherInfo: WeatherModel }) {
 async function getWeatherDetails(location: string) {
   try {
     const response = await fetch(
-      `http://api.weatherapi.com/v1/current.json?key=${process.env.WEATHER_API_KEY}&q=${location}&aqi=no
+      `https://api.weatherapi.com/v1/current.json?key=${process.env.WEATHER_API_KEY}&q=${location}&aqi=no
       `
     );
 
@@ -51,7 +51,9 @@ async function getWeatherDetails(location: string) {
     return weather;
   } catch (error: any) {
     console.log(error);
-
+    if (error instanceof Error) {
+      throw error;
+    }
     throw Error("Unknown error please contact system administrator.");
   }
 }
