@@ -1,32 +1,59 @@
 import { OpenAI } from "openai";
 import { createAI, getMutableAIState, render } from "ai/rsc";
 import { z } from "zod";
+import { WeatherModel } from "@/app/models/weather";
+import LoadingSkeleton from "@/app/loading";
+import { Card, CardContent } from "../ui/card";
+import { Suspense } from "react";
+import Image from "next/image";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-function Spinner() {
-  return <div>Loading...</div>;
-}
-
-// An example of a flight card component.
-function MyCard() {
+function WeatherCard({ weatherInfo }: { weatherInfo: WeatherModel }) {
   return (
-    <div>
-      <p>My Card 1</p>
-      <p>My Card 2</p>
-    </div>
+    <Card className="m-5 py-3">
+      <CardContent>
+        <Suspense>
+          <Image
+            src={`https:${weatherInfo.current.condition.icon}`}
+            alt="Photo by Drew Beamer"
+            width={80}
+            height={80}
+            className="rounded-md object-cover w-auto h-auto"
+          />
+        </Suspense>
+        <p>
+          {weatherInfo.location.name}, {weatherInfo.location.country}
+        </p>
+        <p>{weatherInfo.current.condition.text}</p>
+        <p>Temperature: {weatherInfo.current.temp_c}°C</p>
+        <p>Humidity: {weatherInfo.current.humidity}g/cm³</p>
+      </CardContent>
+    </Card>
   );
 }
 
-// An example of a function that fetches flight information from an external API.
-async function getFlightInfo(flightNumber: string) {
-  return {
-    flightNumber,
-    departure: "New York",
-    arrival: "San Francisco",
-  };
+async function getWeatherDetails(location: string) {
+  try {
+    const response = await fetch(
+      `http://api.weatherapi.com/v1/current.json?key=${process.env.WEATHER_API_KEY}&q=${location}&aqi=no
+      `
+    );
+
+    const result = await response.json();
+    if (!response.ok) {
+      const message = result?.error?.message;
+      throw Error(message);
+    }
+    const weather = result as WeatherModel;
+    return weather;
+  } catch (error: any) {
+    console.log(error);
+
+    throw Error("Unknown error please contact system administrator.");
+  }
 }
 
 async function submitUserMessage(userInput: string) {
@@ -48,7 +75,7 @@ async function submitUserMessage(userInput: string) {
     model: "gpt-3.5-turbo",
     provider: openai,
     messages: [
-      { role: "system", content: "You are a flight assistant" },
+      { role: "system", content: "You are a weather assistant" },
       ...aiState.get(),
     ],
     // `text` is called when an AI returns a text response (as opposed to a tool call).
@@ -73,26 +100,38 @@ async function submitUserMessage(userInput: string) {
         description: "Get the information for a flight",
         parameters: z
           .object({
-            flightNumber: z.string().describe("the number of the flight"),
+            location: z
+              .string()
+              .describe("the location to get weather information"),
           })
           .required(),
-        render: async function* ({ flightNumber }) {
-          yield <Spinner />;
-          const flightInfo = await getFlightInfo(flightNumber);
+        render: async function* ({ location }) {
+          yield <LoadingSkeleton />;
 
-          // Update the final AI state.
-          aiState.done([
-            ...aiState.get(),
-            {
-              role: "function",
-              name: "get_flight_info",
-              // Content can be any string to provide context to the LLM in the rest of the conversation.
-              content: JSON.stringify(flightInfo),
-            },
-          ]);
+          try {
+            const weatherInfo = await getWeatherDetails(location);
 
-          // Return the flight card to the client.
-          return <MyCard />;
+            // Update the final AI state.
+            aiState.done([
+              ...aiState.get(),
+              {
+                role: "function",
+                name: "get_weather_info",
+                // Content can be any string to provide context to the LLM in the rest of the conversation.
+                content: JSON.stringify(weatherInfo),
+              },
+            ]);
+
+            return <WeatherCard weatherInfo={weatherInfo!} />;
+          } catch (error) {
+            if (error instanceof Error) {
+              return <div>{error.message}</div>;
+            } else {
+              return (
+                <div>Unknown error please contact system administrator.</div>
+              );
+            }
+          }
         },
       },
     },
