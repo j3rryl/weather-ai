@@ -141,6 +141,7 @@ async function submitUserMessage(userInput: string) {
 
   return {
     id: Date.now(),
+    role: "Weather API",
     display: ui,
   };
 }

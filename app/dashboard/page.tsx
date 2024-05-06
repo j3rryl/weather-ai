@@ -67,7 +67,7 @@ export default function Page() {
                   <AvatarFallback>WA</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col gap-2">
-                  <p>{message.role || "Weather API"}</p>
+                  <p>{message.role}</p>
                   <div>{message.display}</div>
                 </div>
               </div>
