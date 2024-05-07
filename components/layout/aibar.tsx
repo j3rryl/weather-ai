@@ -98,8 +98,8 @@ async function submitUserMessage(userInput: string) {
       return <p>{content}</p>;
     },
     tools: {
-      get_flight_info: {
-        description: "Get the information for a flight",
+      get_weather_info: {
+        description: "Get weather information given location",
         parameters: z
           .object({
             location: z
