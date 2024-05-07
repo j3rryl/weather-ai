@@ -3,8 +3,8 @@ import Sidebar from "@/components/layout/sidebar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "AI Chatbot",
-  description: "AI Chatbot for you",
+  title: "Weather AI",
+  description: "Weather AI Chatbot for you",
 };
 
 export default function DashboardLayout({

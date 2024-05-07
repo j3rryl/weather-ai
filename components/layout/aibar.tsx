@@ -1,16 +1,27 @@
-import { OpenAI } from "openai";
-import { createAI, getMutableAIState, render } from "ai/rsc";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAI, getMutableAIState, streamUI } from "ai/rsc";
 import { z } from "zod";
 import { WeatherModel } from "@/app/models/weather";
 import LoadingSkeleton from "@/app/loading";
 import { Card, CardContent } from "../ui/card";
-import { Suspense } from "react";
+import { ReactNode, Suspense } from "react";
 import Image from "next/image";
 
-const openai = new OpenAI({
+const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+export interface ServerMessage {
+  role: "user" | "assistant";
+  content: string;
+  name?: string;
+}
+
+export interface ClientMessage {
+  id: number;
+  role: "user" | "assistant" | "Weather API";
+  display: ReactNode;
+}
 function WeatherCard({ weatherInfo }: { weatherInfo: WeatherModel }) {
   return (
     <Card className="m-5 py-3">
@@ -58,12 +69,11 @@ async function getWeatherDetails(location: string) {
   }
 }
 
-async function submitUserMessage(userInput: string) {
+async function submitUserMessage(userInput: string): Promise<ClientMessage> {
   "use server";
 
-  const aiState = getMutableAIState<typeof AI>();
+  const aiState = getMutableAIState();
 
-  // Update the AI state with the new user message.
   aiState.update([
     ...aiState.get(),
     {
@@ -72,19 +82,14 @@ async function submitUserMessage(userInput: string) {
     },
   ]);
 
-  // The `render()` creates a generated, streamable UI.
-  const ui = render({
-    model: "gpt-3.5-turbo",
-    provider: openai,
+  const ui = await streamUI({
+    model: openai("gpt-3.5-turbo"),
+    system: "You are a friendly weather assistant!",
     messages: [
-      { role: "system", content: "You are a weather assistant" },
       ...aiState.get(),
+      { role: "assistant", content: "You are a weather assistant" },
     ],
-    // `text` is called when an AI returns a text response (as opposed to a tool call).
-    // Its content is streamed from the LLM, so this function will be called
-    // multiple times with `content` being incremental.
     text: ({ content, done }) => {
-      // When it's the final content, mark the state as done and ready for the client to access.
       if (done) {
         aiState.done([
           ...aiState.get(),
@@ -107,31 +112,25 @@ async function submitUserMessage(userInput: string) {
               .describe("the location to get weather information"),
           })
           .required(),
-        render: async function* ({ location }) {
+        generate: async function* ({ location }) {
           yield <LoadingSkeleton />;
 
           try {
             const weatherInfo = await getWeatherDetails(location);
 
-            // Update the final AI state.
             aiState.done([
               ...aiState.get(),
               {
-                role: "function",
+                role: "assistant",
                 name: "get_weather_info",
-                // Content can be any string to provide context to the LLM in the rest of the conversation.
                 content: JSON.stringify(weatherInfo),
               },
             ]);
 
-            return <WeatherCard weatherInfo={weatherInfo!} />;
+            return <WeatherCard weatherInfo={weatherInfo} />;
           } catch (error) {
             if (error instanceof Error) {
-              return <div>{error.message}</div>;
-            } else {
-              return (
-                <div>Unknown error please contact system administrator.</div>
-              );
+              return <div>{error?.message}</div>;
             }
           }
         },
@@ -142,31 +141,14 @@ async function submitUserMessage(userInput: string) {
   return {
     id: Date.now(),
     role: "Weather API",
-    display: ui,
+    display: ui.value,
   };
 }
 
-// Define the initial state of the AI. It can be any JSON object.
-const initialAIState: {
-  role: "user" | "assistant" | "system" | "function";
-  content: string;
-  id?: string;
-  name?: string;
-}[] = [];
-
-// The initial UI state that the client will keep track of, which contains the message IDs and their UI nodes.
-const initialUIState: {
-  id: number;
-  display: React.ReactNode;
-}[] = [];
-
-// AI is a provider you wrap your application with so you can access AI and UI state in your components.
-export const AI: any = createAI({
+export const AI = createAI<ServerMessage[], ClientMessage[]>({
   actions: {
     submitUserMessage,
   },
-  // Each state can be any shape of object, but for chat applications
-  // it makes sense to have an array of messages. Or you may prefer something like { id: number, messages: Message[] }
-  initialUIState,
-  initialAIState,
+  initialUIState: [],
+  initialAIState: [],
 });

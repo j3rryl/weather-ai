@@ -10,8 +10,8 @@ import { AI } from "@/components/layout/aibar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Page() {
-  const [messages, setMessages] = useUIState<typeof AI>();
-  const { submitUserMessage } = useActions<typeof AI>();
+  const [messages, setMessages] = useUIState();
+  const { submitUserMessage } = useActions();
 
   const [loading, setLoading] = useState<boolean>(false);
   const formSchema = z.object({
