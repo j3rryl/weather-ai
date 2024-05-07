@@ -12,7 +12,7 @@ const openai = createOpenAI({
 });
 
 export interface ServerMessage {
-  role: "user" | "assistant" | "tool" | "function";
+  role: "user" | "assistant";
   content: string;
   name?: string;
 }
@@ -74,7 +74,6 @@ async function submitUserMessage(userInput: string): Promise<ClientMessage> {
 
   const aiState = getMutableAIState();
 
-  // Update the AI state with the new user message.
   aiState.update([
     ...aiState.get(),
     {
@@ -83,7 +82,6 @@ async function submitUserMessage(userInput: string): Promise<ClientMessage> {
     },
   ]);
 
-  // The `render()` creates a generated, streamable UI.
   const ui = await streamUI({
     model: openai("gpt-3.5-turbo"),
     system: "You are a friendly weather assistant!",
@@ -91,11 +89,7 @@ async function submitUserMessage(userInput: string): Promise<ClientMessage> {
       ...aiState.get(),
       { role: "assistant", content: "You are a weather assistant" },
     ],
-    // `text` is called when an AI returns a text response (as opposed to a tool call).
-    // Its content is streamed from the LLM, so this function will be called
-    // multiple times with `content` being incremental.
     text: ({ content, done }) => {
-      // When it's the final content, mark the state as done and ready for the client to access.
       if (done) {
         aiState.done([
           ...aiState.get(),
@@ -121,20 +115,24 @@ async function submitUserMessage(userInput: string): Promise<ClientMessage> {
         generate: async function* ({ location }) {
           yield <LoadingSkeleton />;
 
-          const weatherInfo = await getWeatherDetails(location);
+          try {
+            const weatherInfo = await getWeatherDetails(location);
 
-          // Update the final AI state.
-          aiState.done([
-            ...aiState.get(),
-            {
-              role: "function",
-              name: "get_weather_info",
-              // Content can be any string to provide context to the LLM in the rest of the conversation.
-              content: JSON.stringify(weatherInfo),
-            },
-          ]);
+            aiState.done([
+              ...aiState.get(),
+              {
+                role: "assistant",
+                name: "get_weather_info",
+                content: JSON.stringify(weatherInfo),
+              },
+            ]);
 
-          return <WeatherCard weatherInfo={weatherInfo!} />;
+            return <WeatherCard weatherInfo={weatherInfo} />;
+          } catch (error) {
+            if (error instanceof Error) {
+              return <div>{error?.message}</div>;
+            }
+          }
         },
       },
     },
@@ -147,13 +145,10 @@ async function submitUserMessage(userInput: string): Promise<ClientMessage> {
   };
 }
 
-// AI is a provider you wrap your application with so you can access AI and UI state in your components.
 export const AI = createAI<ServerMessage[], ClientMessage[]>({
   actions: {
     submitUserMessage,
   },
-  // Each state can be any shape of object, but for chat applications
-  // it makes sense to have an array of messages. Or you may prefer something like { id: number, messages: Message[] }
   initialUIState: [],
   initialAIState: [],
 });
