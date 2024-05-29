@@ -22,7 +22,7 @@ export interface ClientMessage {
   role: "user" | "assistant" | "Weather API";
   display: ReactNode;
 }
-function WeatherCard({ weatherInfo }: { weatherInfo: WeatherModel }) {
+function WeatherCard({ weatherInfo }: Readonly<{ weatherInfo: WeatherModel }>) {
   return (
     <Card className="m-5 py-3">
       <CardContent>

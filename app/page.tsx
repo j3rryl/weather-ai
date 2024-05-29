@@ -33,13 +33,11 @@ export default function Page() {
     }
   };
   return (
-    <>
-      <div className="flex flex-col h-full p-2 md:p-2 pt-6 gap-2">
-        <ScrollArea className="flex-grow h-5/6">{weather}</ScrollArea>
-        <div>
-          <InputPrompt onSubmit={onSubmit} loading={loading} form={form} />
-        </div>
+    <div className="flex flex-col h-full p-2 md:p-2 pt-6 gap-2">
+      <ScrollArea className="flex-grow h-5/6">{weather}</ScrollArea>
+      <div>
+        <InputPrompt onSubmit={onSubmit} loading={loading} form={form} />
       </div>
-    </>
+    </div>
   );
 }

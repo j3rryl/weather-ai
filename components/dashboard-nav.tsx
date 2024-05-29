@@ -22,12 +22,12 @@ export function DashboardNav({ items, setOpen }: DashboardNavProps) {
 
   return (
     <nav className="grid items-start gap-2">
-      {items.map((item, index) => {
-        const Icon = Icons[item.icon || "arrowRight"];
+      {items.map((item) => {
+        const Icon = Icons[item.icon ?? "arrowRight"];
         return (
           item.href && (
             <Link
-              key={index}
+              key={item.title}
               href={item.disabled ? "/" : item.href}
               onClick={() => {
                 if (setOpen) setOpen(false);

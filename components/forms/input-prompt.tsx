@@ -29,40 +29,38 @@ const InputPrompt: React.FC<InputPromptProps> = ({
   form,
 }) => {
   return (
-    <>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-2 w-full flex items-center justify-between gap-2"
-        >
-          <div className="w-full">
-            <FormField
-              control={form.control}
-              name="prompt"
-              render={({ field }) => (
-                <FormItem>
-                  {/* <FormLabel>Email</FormLabel> */}
-                  <FormControl>
-                    <Textarea
-                      rows={1}
-                      required
-                      placeholder="Enter location to get weather update (e.g., Nairobi)"
-                      disabled={loading}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-2 w-full flex items-center justify-between gap-2"
+      >
+        <div className="w-full">
+          <FormField
+            control={form.control}
+            name="prompt"
+            render={({ field }) => (
+              <FormItem>
+                {/* <FormLabel>Email</FormLabel> */}
+                <FormControl>
+                  <Textarea
+                    rows={1}
+                    required
+                    placeholder="Enter location to get weather update (e.g., Nairobi)"
+                    disabled={loading}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-          <Button disabled={loading} type="submit" size="sm">
-            <CommandIcon />
-          </Button>
-        </form>
-      </Form>
-    </>
+        <Button disabled={loading} type="submit" size="sm">
+          <CommandIcon />
+        </Button>
+      </form>
+    </Form>
   );
 };
 
